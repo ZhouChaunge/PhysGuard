@@ -5,56 +5,56 @@ import sys
 import os
 
 
-# 添加模型路径到系统路径
+# Add model path to system path
 sys.path.append('./realpdebench/realpdebench/model/TRANSOLVER_libs')
 
-# 导入模型相关模块
+# Import model modules
 from Transolver_Structured_Mesh_3D import Model
 from Physics_Attention import Physics_Attention_Structured_Mesh_3D
 from Embedding import timestep_embedding
 
 def create_transolver_3d_model():
     """
-    创建Transolver_Structured_Mesh_3D模型实例
+    Create a Transolver_Structured_Mesh_3D model instance.
     """
-    # 模型参数配置
+    # Model configuration
     model_config = {
-        'space_dim': 3,           # 空间维度 (x, y, z)
-        'n_layers': 5,            # Transformer层数
-        'n_hidden': 256,          # 隐藏层维度
-        'dropout': 0.1,           # Dropout率
-        'n_head': 8,              # 注意力头数
-        'Time_Input': True,       # 是否使用时间输入
-        'act': 'gelu',            # 激活函数
-        'mlp_ratio': 4,           # MLP扩展比例
-        'fun_dim': 1,             # 函数维度
-        'out_dim': 1,             # 输出维度
-        'slice_num': 32,          # 切片数量
-        'ref': 8,                 # 参考网格大小
-        'unified_pos': False,     # 是否使用统一位置编码
-        'H': 32,                  # 高度
-        'W': 32,                  # 宽度
-        'D': 32,                  # 深度
+        'space_dim': 3,           # spatial dimension (x, y, z)
+        'n_layers': 5,            # number of Transformer layers
+        'n_hidden': 256,          # hidden dimension
+        'dropout': 0.1,           # dropout rate
+        'n_head': 8,              # number of attention heads
+        'Time_Input': True,       # whether to use time input
+        'act': 'gelu',            # activation function
+        'mlp_ratio': 4,           # MLP expansion ratio
+        'fun_dim': 1,             # function dimension
+        'out_dim': 1,             # output dimension
+        'slice_num': 32,          # number of slices
+        'ref': 8,                 # reference grid size
+        'unified_pos': False,     # whether to use unified positional encoding
+        'H': 32,                  # height
+        'W': 32,                  # width
+        'D': 32,                  # depth
     }
-    
-    # 创建模型
+
+    # Create model
     model = Model(**model_config)
     
     return model, model_config
 
 def generate_sample_data(batch_size=2, H=32, W=32, D=32, space_dim=3, fun_dim=1):
     """
-    生成示例数据
+    Generate sample data.
     """
-    # 生成空间坐标 (x, y, z)
+    # Generate spatial coordinates (x, y, z)
     x_coords = torch.linspace(0, 1, H).reshape(1, H, 1, 1).repeat(batch_size, 1, W, D)
     y_coords = torch.linspace(0, 1, W).reshape(1, 1, W, 1).repeat(batch_size, H, 1, D)
     z_coords = torch.linspace(0, 1, D).reshape(1, 1, 1, D).repeat(batch_size, H, W, 1)
     
-    # 组合空间坐标
+    # Combine spatial coordinates
     spatial_coords = torch.stack([x_coords, y_coords, z_coords], dim=-1)  # [B, H, W, D, 3]
-    
-    # 生成函数值 (例如：简单的正弦波)
+
+    # Generate function values (e.g., simple sine wave)
     x_grid, y_grid, z_grid = torch.meshgrid(
         torch.linspace(0, 2*np.pi, H),
         torch.linspace(0, 2*np.pi, W),
@@ -63,13 +63,13 @@ def generate_sample_data(batch_size=2, H=32, W=32, D=32, space_dim=3, fun_dim=1)
     )
     function_values = torch.sin(x_grid + y_grid + z_grid).unsqueeze(0).unsqueeze(-1).repeat(batch_size, 1, 1, 1, fun_dim)
     
-    # 重塑为模型期望的格式
-    # 模型期望输入: [batch_size, H*W*D, space_dim] 和 [batch_size, H*W*D, fun_dim]
+    # Reshape to model-expected format
+    # Model expects: [batch_size, H*W*D, space_dim] and [batch_size, H*W*D, fun_dim]
     x = spatial_coords.reshape(batch_size, H*W*D, space_dim)
     fx = function_values.reshape(batch_size, H*W*D, fun_dim)
-    
-    # 生成时间步
-    T = torch.tensor([0.5, 1.0])  # 两个批次的时间步
+
+    # Generate time steps
+    T = torch.tensor([0.5, 1.0])  # time steps for two batches
     
     return x, fx, T
 

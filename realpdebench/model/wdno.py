@@ -433,12 +433,12 @@ class WDNO(Model):
 
     def forward(self, input=None, target=None, device=None):
         """
-        训练模式 (self.training=True) 且提供 target 时：走扩散训练路径，返回 loss tensor（兼容 DDP）。
-        推理模式：走 DDIM/p_sample_loop 采样路径（no_grad 由调用方保证）。
+        Training mode (self.training=True) with target provided: runs diffusion training path, returns loss tensor (DDP-compatible).
+        Inference mode: runs DDIM/p_sample_loop sampling path (no_grad ensured by caller).
         """
         if self.training and target is not None:
             return self.p_losses(input, target)
-        # 推理路径
+        # inference path
         sample_fn = self.p_sample_loop if not self.is_ddim_sampling else self.ddim_sample
         with torch.no_grad():
             return sample_fn(input=input, device=device)

@@ -462,9 +462,9 @@ class CNO3d(Model):
 
 
     def forward(self, x):
-        # 输入格式: (batch, time, height, width, channels) -> (batch, channels, time, height, width)
+        # Input format: (batch, time, height, width, channels) -> (batch, channels, time, height, width)
         switch = False
-        if x.dim() == 5 and x.shape[-1] < x.shape[1]:  # 假设最后一个维度是channels
+        if x.dim() == 5 and x.shape[-1] < x.shape[1]:  # assume last dim is channels
             switch = True
             x = x.permute(0, 4, 1, 2, 3)  # (B, T, H, W, C) -> (B, C, T, H, W)
                  
