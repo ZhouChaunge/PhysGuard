@@ -124,7 +124,7 @@ unified hyperparameter set so the results are directly comparable. We use
 ### 1️⃣  Pre-train on simulation data (skip if using released backbones)
 
 ```bash
-python -m realpdebench.train_surrogate \
+python -m realpdebench.train_gpus \
     --config configs/1-cylinder/fno/1_pretrain.yaml \
     --train_data_type numerical
 ```
@@ -170,19 +170,19 @@ size, learning rate, and number of update steps** with PhysGuard.
 
 ```bash
 # (a) Direct Fine-Tuning (DFT)
-python -m realpdebench.train_surrogate \
+python -m realpdebench.train_gpus \
     --config configs/1-cylinder/fno/2_dft.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
 
 # (b) Elastic Weight Consolidation (EWC, Kirkpatrick et al. 2017)
-python -m realpdebench.train_surrogate \
+python -m realpdebench.train_gpus \
     --config configs/1-cylinder/fno/2_ewc.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
 
 # (c) L2-SP regularisation (Li et al. 2018)
-python -m realpdebench.train_surrogate \
+python -m realpdebench.train_gpus \
     --config configs/1-cylinder/fno/2_l2sp.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
@@ -209,9 +209,9 @@ Replace `<paradigm>` with the method name to evaluate:
 | Method | Config suffix | Entry point |
 |---|---|---|
 | Pretrained (zero-shot) | `fno/1_pretrain.yaml` | `realpdebench.eval` |
-| DFT | `fno/2_dft.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
-| EWC | `fno/2_ewc.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
-| L2-SP | `fno/2_l2sp.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
+| DFT | `fno/2_dft.yaml` | `realpdebench.train_gpus` + `realpdebench.eval` |
+| EWC | `fno/2_ewc.yaml` | `realpdebench.train_gpus` + `realpdebench.eval` |
+| L2-SP | `fno/2_l2sp.yaml` | `realpdebench.train_gpus` + `realpdebench.eval` |
 | **PhysGuard** | `fno/2_physguard.yaml` | `physguard.train` + `realpdebench.eval` |
 
 ## 📁 Output structure
