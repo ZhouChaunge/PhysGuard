@@ -1,0 +1,59 @@
+exp_name: "dpot_s_control"
+gpu: 2
+seed: 0
+results_path: "./results/002-control_cylinder/"
+
+# data
+dataset_name: "controlled_cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 16
+normalizer: "gaussian"
+
+# data parameters for training
+train_data_type: "real"
+mask_prob: 0.1
+noise_scale: 0.0
+
+# model
+model_name: "dpot"
+checkpoint_path: "./results/002-control_cylinder/dpot/dpot_s_control_pretrained/2026-03-17_19-52-05/model_0320.pth"
+model_type: "dpot"
+img_size: 128
+patch_size: 8
+in_channels: 5
+out_channels: 4
+embed_dim: 1024
+depth: 6
+n_blocks: 8
+modes: 32
+mlp_ratio: 1
+out_layer_dim: 32
+normalize: False
+act: "gelu"
+time_agg: "exp_mlp"
+n_cls: 12
+in_timesteps: 10
+out_timesteps: 10
+
+# training
+is_use_tb:
+scheduler: cosine
+step_size: 1000
+num_update: 4000
+train_batch_size: 4
+test_batch_size: 4
+lr: 0.0001
+clip_grad_norm: 0.5
+use_amp: false
+
+# EWC regularization
+reg_type: "ewc"
+reg_lambda: 1.0
+ewc_num_samples: 200
+
+# evaluation
+N_autoregressive: 1
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12

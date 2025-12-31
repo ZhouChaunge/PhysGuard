@@ -1,0 +1,48 @@
+exp_name: "transolver_cylinder"
+gpu: 3
+seed: 0
+results_path: "./results/001-cylinder/"
+
+# data
+dataset_name: "cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 32
+normalizer: "gaussian"
+
+# data parameters for training
+mask_prob: 0.1
+noise_scale: 0.1  # only applicable for numerical data
+
+# model
+model_name: "transolver"
+space_dim: 3
+n_layers: 1
+n_hidden: 256
+n_head: 8
+H: 128
+W: 64
+D: 20
+fun_dim: 0
+out_dim: 3
+ref: 4
+dropout: 0.1
+act: "gelu"
+mlp_ratio: 4
+slice_num: 16
+
+# training
+is_use_tb:
+scheduler: cosine
+step_size: 1000
+num_update: 5000
+train_batch_size: 4   # single GPU RTX4090; original paper used bs=16 (multi-GPU), lr scaled proportionally
+test_batch_size: 8
+lr: 0.00018  # 0.0007 * (4/16) = 0.000175 ≈ 0.00018
+clip_grad_norm: 0.
+
+# evaluation
+N_autoregressive: 3
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12

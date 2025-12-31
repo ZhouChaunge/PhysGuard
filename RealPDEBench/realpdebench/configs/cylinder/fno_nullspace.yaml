@@ -1,0 +1,52 @@
+exp_name: "fno_cylinder"
+gpu: 2
+seed: 0
+results_path: "./results/001-cylinder/"
+
+# data
+dataset_name: "cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 32
+normalizer: "gaussian" # none, gaussian, range
+
+# data parameters for training
+train_data_type: "real"
+mask_prob: 0.1
+noise_scale: 0.0
+
+# model
+model_name: "fno"
+checkpoint_path: ./results/001-cylinder/fno/fno_cylinder_pretrained/2026-03-09_17-33-29/model_3760.pth
+modes1: 4
+modes2: 12
+modes3: 16
+n_layers: 4
+width: 64
+
+# training
+is_use_tb: 
+scheduler: cosine # step, cosine
+step_size: 1000 # only applicable for step scheduler
+num_update: 4000
+train_batch_size: 4
+test_batch_size: 8
+lr: 0.0001
+clip_grad_norm: 0.
+
+# evaluation
+N_autoregressive: 10
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12
+
+# null-space fine-tuning specific
+ns_n_components: 500         # upper-bound cap on k (per layer); adaptive k may be smaller
+ns_variance_threshold: 0.9   # adaptive k: keep eigenvectors explaining >= 90% Fisher variance
+                             # set to 0 to disable and always use fixed ns_n_components
+ns_alpha: 1.0                # protection strength: 1.0 = full null-space projection
+ns_progressive: false         # enable progressive relaxation
+ns_beta_min: 0.3             # min protection when progressive=true
+ns_layer_wise: true           # per-layer vs global null-space
+ns_max_samples: 1000           # samples for Fisher estimation
+ns_projection_path:           # path to load/save pre-computed projections (optional)

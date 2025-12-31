@@ -1,0 +1,54 @@
+exp_name: "transolver_control"
+gpu: 2
+seed: 0
+results_path: "./results/002-control_cylinder/"
+
+# data
+dataset_name: "controlled_cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 16
+normalizer: "gaussian"
+
+# data parameters for training
+train_data_type: "real"
+mask_prob: 0.1
+noise_scale: 0.1  # extra noise injected to amplify sim-to-real distribution shift (physical-forgetting experiment)
+
+# model
+model_name: "transolver"
+checkpoint_path: ./results/002-control_cylinder/transolver/transolver_control_pretrained/2026-03-26_19-32-01/model_5000.pth
+space_dim: 5
+n_layers: 1
+n_hidden: 256
+n_head: 8
+H: 64
+W: 128
+D: 10
+fun_dim: 0
+out_dim: 3
+ref: 4
+dropout: 0.1
+act: "gelu"
+mlp_ratio: 4
+slice_num: 16
+
+# training
+is_use_tb:
+scheduler: cosine
+step_size: 1000
+num_update: 4000
+train_batch_size: 4
+test_batch_size: 8
+lr: 0.0001
+clip_grad_norm: 0.
+
+# L2 regularization (防遗忘 baseline)
+reg_type: "l2"
+reg_lambda: 1.0e-4
+
+# evaluation
+N_autoregressive: 2
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12

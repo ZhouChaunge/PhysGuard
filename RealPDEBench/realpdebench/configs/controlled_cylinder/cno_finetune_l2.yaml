@@ -1,0 +1,59 @@
+exp_name: "cno_control"
+gpu: 2
+seed: 0
+results_path: "./results/002-control_cylinder/"
+
+# data
+dataset_name: "controlled_cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 16
+normalizer: "gaussian"
+
+# data parameters for training
+train_data_type: "real"
+mask_prob: 0.1
+noise_scale: 0.1  # extra noise injected to amplify sim-to-real distribution shift (physical-forgetting experiment)
+
+
+# model
+model_name: "cno"
+checkpoint_path: "./results/002-control_cylinder/cno/cno_control_pretrained/2026-03-16_00-37-17/model_2600.pth"
+
+N_layers: 3
+N_res: 1,
+N_res_neck: 8,
+channel_multiplier: 32,
+conv_kernel: 3,
+cutoff_den: 2.0001,
+filter_size: 6,
+lrelu_upsampling: 2,
+half_width_mult: 0.8,
+radial: False,
+batch_norm: True,
+out_dim: 1,
+out_size: 1,
+expand_input: False,
+latent_lift_proj_dim: 64,
+add_inv: True,
+activation: 'LeakyReLU'
+
+# training
+is_use_tb:
+scheduler: cosine
+step_size: 1000
+num_update: 4000
+train_batch_size: 4
+test_batch_size: 16
+lr: 0.0001
+clip_grad_norm: 0.
+
+# L2 weight regularization
+reg_type: "l2"
+reg_lambda: 1.0e-4
+
+# evaluation
+N_autoregressive: 3
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12

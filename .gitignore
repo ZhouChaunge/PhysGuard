@@ -1,0 +1,50 @@
+# Editors / OS
+__pycache__/
+*.py[cod]
+*.so
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Python packaging / venvs
+.venv/
+venv/
+env/
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# Experiment artefacts (excluded from the repo by design)
+results/
+logs/
+ablation_logs/
+checkpoints/
+dpot_ckpts/
+runs/
+wandb/
+tensorboard/
+
+# Data and figures (download / regenerate)
+data/realpdebench/
+*.h5
+*.hdf5
+*.arrow
+*.parquet
+*.npz
+*.pt
+*.pth
+*.ckpt
+
+# Generated figures
+*.pdf
+*.png
+*.jpg
+*.jpeg
+!RealPDEBench/imgs/*.png
+!RealPDEBench/imgs/*.jpg
+
+# Hugging Face cache
+.cache/
+hf_cache/

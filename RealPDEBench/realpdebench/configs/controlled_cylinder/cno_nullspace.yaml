@@ -1,0 +1,64 @@
+exp_name: "cno_control"
+gpu: 1
+seed: 0
+results_path: "./results/002-control_cylinder/"
+
+# data
+dataset_name: "controlled_cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 16
+normalizer: "gaussian"
+
+# data parameters for training
+train_data_type: "real"
+mask_prob: 0.1
+noise_scale: 0.0
+
+# model
+model_name: "cno"
+checkpoint_path: ./results/002-control_cylinder/cno/cno_control_pretrained/2026-03-16_00-37-17/model_2600.pth
+
+N_layers: 3
+N_res: 1,
+N_res_neck: 8,
+channel_multiplier: 32,
+conv_kernel: 3,
+cutoff_den: 2.0001,
+filter_size: 6,
+lrelu_upsampling: 2,
+half_width_mult: 0.8,
+radial: False,
+batch_norm: True,
+out_dim: 1,
+out_size: 1,
+expand_input: False,
+latent_lift_proj_dim: 64,
+add_inv: True,
+activation: 'LeakyReLU'
+
+# training
+is_use_tb:
+scheduler: cosine
+step_size: 1000
+num_update: 4000
+train_batch_size: 4
+test_batch_size: 16
+lr: 0.0001
+clip_grad_norm: 0.
+
+# evaluation
+N_autoregressive: 3
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12
+
+# null-space fine-tuning specific
+ns_n_components: 200
+ns_variance_threshold: 0.9
+ns_alpha: 1.0
+ns_progressive: false
+ns_beta_min: 0.3
+ns_layer_wise: true
+ns_max_samples: 200
+ns_projection_path:

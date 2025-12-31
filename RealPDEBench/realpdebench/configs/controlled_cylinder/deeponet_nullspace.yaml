@@ -1,0 +1,48 @@
+exp_name: "deeponet_control"
+gpu: 2
+seed: 0
+results_path: "./results/002-control_cylinder/"
+
+# data
+dataset_name: "controlled_cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 16
+normalizer: "gaussian"
+
+# data parameters for training
+train_data_type: "real"
+mask_prob: 0.1
+noise_scale: 0.0
+
+# model
+model_name: "deeponet"
+checkpoint_path: ./results/002-control_cylinder/deeponet/deeponet_control_pretrained/2026-03-16_11-38-33/model_1000.pth
+p: 256
+dropout_rate: 0.1
+
+# training
+is_use_tb:
+scheduler: cosine
+step_size: 1000
+num_update: 6000
+train_batch_size: 4
+test_batch_size: 8
+lr: 0.0001
+clip_grad_norm: 0.
+
+# evaluation
+N_autoregressive: 1
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12
+
+# null-space fine-tuning specific
+ns_n_components: 200
+ns_variance_threshold: 0.9
+ns_alpha: 0.5
+ns_progressive: false
+ns_beta_min: 0.3
+ns_layer_wise: true
+ns_max_samples: 200
+ns_projection_path:

@@ -1,0 +1,13 @@
+{
+  "data_version": "2.0.0",
+  "min_code_version": "0.2.0",
+  "format": "lazy_slicing_v2",
+  "released": "2026-01-24",
+  "breaking_changes": [
+    "Arrow stores complete trajectories (not pre-sliced)",
+    "Index files use JSON format: {split}_index_{type}.json",
+    "Spatial subsampling applied during conversion (not runtime)"
+  ],
+  "upgrade_instructions": "cd <your-realpdebench-repo> && git pull && pip install -e .",
+  "repo_url": "https://github.com/AI4Science-WestlakeU/RealPDEBench"
+}

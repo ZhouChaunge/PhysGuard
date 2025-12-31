@@ -1,0 +1,41 @@
+exp_name: "fno_cylinder"
+# gpu: 0
+gpu: [0, 1]  # 4卡 DDP
+seed: 0
+results_path: "./results/001-cylinder/"
+
+# data
+dataset_name: "cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 32
+normalizer: "gaussian" # none, gaussian, range
+
+# data parameters for training
+mask_prob: 0.1
+noise_scale: 0.1 # only applicable for numerical data
+
+# model
+model_name: "fno"
+# checkpoint_path: ./results/fno/fno_cylinder_numerical_False/2025-09-12_11-17-53/model_3840.pth  # 论文原始ckpt，本地不存在，从头训练时注释掉
+modes1: 4
+modes2: 12
+modes3: 16
+n_layers: 4
+width: 64
+
+# training
+is_use_tb: 
+scheduler: cosine # step, cosine
+step_size: 1000 # only applicable for step scheduler
+num_update: 4000
+train_batch_size: 16
+test_batch_size: 32
+lr: 0.0001
+clip_grad_norm: 0.
+
+# evaluation
+N_autoregressive: 10
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12

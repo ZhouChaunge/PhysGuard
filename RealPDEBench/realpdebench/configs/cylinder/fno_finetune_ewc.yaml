@@ -1,0 +1,46 @@
+exp_name: "fno_cylinder"
+gpu: 3
+seed: 0
+results_path: "./results/001-cylinder/"
+
+# data
+dataset_name: "cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 32
+normalizer: "gaussian" # none, gaussian, range
+
+# data parameters for training
+train_data_type: "real"
+mask_prob: 0.1
+noise_scale: 0.0  # extra noise injected to amplify sim-to-real distribution shift (physical-forgetting experiment)
+
+# model
+model_name: "fno"
+checkpoint_path: ./results/001-cylinder/fno/fno_cylinder_pretrained/2026-03-09_17-33-29/model_3760.pth
+modes1: 4
+modes2: 12
+modes3: 16
+n_layers: 4
+width: 64
+
+# training  (same hyperparams as fno_nullspace.yaml for fair comparison)
+is_use_tb:
+scheduler: cosine
+step_size: 1000
+num_update: 4000
+train_batch_size: 4
+test_batch_size: 8
+lr: 0.0001
+clip_grad_norm: 0.
+
+# EWC regularization (弹性权重整合 baseline)
+reg_type: "ewc"
+reg_lambda: 1.0     # EWC 中 Fisher 已经缩放，lambda 一般取较大值
+ewc_num_samples: 200  # 用 200 个仿真样本估计 Fisher 对角
+
+# evaluation
+N_autoregressive: 10
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12

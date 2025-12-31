@@ -1,0 +1,45 @@
+exp_name: "fno_control"
+gpu: 0
+seed: 0
+results_path: "./results/002-control_cylinder/"
+
+# data
+dataset_name: "controlled_cylinder"
+dataset_root: "./data/realpdebench/"
+use_hf_dataset: true
+num_workers: 16
+normalizer: "gaussian"
+
+# data parameters for training
+train_data_type: "real"
+mask_prob: 0.1
+noise_scale: 0.1  # extra noise injected to amplify sim-to-real distribution shift (physical-forgetting experiment)
+
+# model
+model_name: "fno"
+checkpoint_path: "./results/002-control_cylinder/fno/fno_control_pretrained/2026-03-15_02-36-15/model_3840.pth"
+modes1: 4
+modes2: 12
+modes3: 16
+n_layers: 4
+width: 64
+
+# training  (same hyperparams as fno_nullspace.yaml for fair comparison)
+is_use_tb:
+scheduler: cosine
+step_size: 1000
+num_update: 4000
+train_batch_size: 4
+test_batch_size: 8
+lr: 0.0001
+clip_grad_norm: 0.
+
+# L2 weight regularization
+reg_type: "l2"
+reg_lambda: 1.0e-4
+
+# evaluation
+N_autoregressive: 1
+N_plot: 0
+probe_diagnostic: True
+N_plot_probe: 12
