@@ -13,15 +13,13 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 This license applies to the PhysGuard additions in this repository:
-- RealPDEBench/realpdebench/nullspace/**
-- RealPDEBench/realpdebench/train_nullspace.py
-- analysis/**
-- paper_figures/**
+- physguard/**
+- figures/**
+- configs/**
 - README.md
 
-The remaining files under RealPDEBench/ are derived from the RealPDEBench
-benchmark and are governed by the license in RealPDEBench/LICENSE
-(CC BY-NC 4.0).
+The code under realpdebench/ is derived from the RealPDEBench benchmark and
+is governed by the license in LICENSE.RealPDEBench (CC BY-NC 4.0).
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

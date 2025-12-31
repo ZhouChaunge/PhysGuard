@@ -3,14 +3,14 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "realpdebench"
+name = "physguard"
 version = "0.1.0"
-description = "RealPDEBench: paired real-world and simulated data benchmark for complex physical systems."
+description = "PhysGuard: Fisher-guided gradient projection for sim-to-real neural PDE surrogates."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
-  { name = "Peiyan Hu", email = "hupeiyan18@mails.ucas.ac.cn" },
+  { name = "Anonymous" },
 ]
 keywords = [
   "scientific-ml",
@@ -57,9 +57,6 @@ dependencies = [
   "datasets",
 ]
 
-[project.urls]
-Homepage = "https://realpdebench.github.io/"
-
 [project.scripts]
 realpdebench = "realpdebench.cli:main"
 
@@ -67,9 +64,6 @@ realpdebench = "realpdebench.cli:main"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["realpdebench", "realpdebench.*"]
-
-[tool.setuptools.package-data]
-realpdebench = ["configs/**/*.yaml", "configs/**/*.yml"]
+include = ["physguard", "physguard.*", "realpdebench", "realpdebench.*"]
 
 

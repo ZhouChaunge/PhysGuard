@@ -8,7 +8,7 @@ into the null space before each optimizer step.
 import torch
 import torch.nn as nn
 from typing import Optional
-from realpdebench.nullspace.null_space_projector import NullSpaceProjector
+from physguard.projector import NullSpaceProjector
 
 
 class NullSpaceOptimizer:

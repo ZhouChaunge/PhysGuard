@@ -1,130 +1,119 @@
-# PhysGuard: Fisher-Guided Gradient Projection for Sim-to-Real Neural PDE Surrogates
+# PhysGuard
 
-This repository contains the official implementation of **PhysGuard**, a
-physics-preserving framework for sim-to-real adaptation of neural operator
-PDE surrogates. PhysGuard identifies a low-dimensional, physics-critical
-parameter subspace via the empirical Fisher Information Matrix (FIM) computed
-on simulation data, and constrains fine-tuning gradients to its orthogonal
-complement so that the low-frequency PDE structures learned during
-pre-training are not overwritten when adapting to real experimental data.
+Code for **PhysGuard: Fisher-Guided Gradient Projection for Sim-to-Real Neural PDE Surrogates**.
 
-The implementation is built on top of
-[RealPDEBench](https://github.com/AI4Science-WestlakeU/RealPDEBench), the
-benchmark used in our experiments. The PhysGuard contribution is contained in
-`RealPDEBench/realpdebench/nullspace/` and `RealPDEBench/realpdebench/train_nullspace.py`;
-all other files in `RealPDEBench/` are derived from the upstream benchmark
-(see `RealPDEBench/LICENSE`).
+PhysGuard preserves the physics learned during simulation pre-training when adapting
+a neural PDE surrogate to real experimental data. It uses the empirical Fisher
+Information Matrix (FIM) of the pre-trained model to identify the parameter
+directions that encode low-frequency physical structure, and then constrains
+fine-tuning gradients to the **null space** of those directions. The whole
+procedure adds no penalty term, no extra trainable module, and only one
+hyperparameter — the protection strength `α`.
 
-> Manuscript: see `../001-manuscript/neurips_2026.tex` (companion to this code).
+<p align="center">
+  <img src="figures/method.png" alt="PhysGuard method overview" width="850"/>
+</p>
 
----
+## 📖 Method at a glance
 
-## Repository layout
+Given a pre-trained neural operator `f_θ*` and a small batch of `N` simulation
+gradients `g_i = ∇_θ ℓ(θ*; x_i, y_i)` stacked into `G ∈ R^{N×d}`:
+
+1. **Subspace estimation (offline, once).** For every layer `m`, build the
+   Gram matrix `K = G Gᵀ ∈ R^{N×N}`, run an SVD, keep the smallest `k_m`
+   eigenvectors that capture `τ` (default `0.9`) of the cumulative Fisher
+   variance, and lift them back to parameter space:
+
+   ```
+   U^(m) = normalise( Gᵀ V_{k_m} ) ∈ R^{d×k_m}
+   ```
+
+2. **Constrained fine-tuning (every step).** During real-data fine-tuning,
+   project each per-layer gradient onto the safe subspace before the
+   optimiser step:
+
+   ```
+   g_proj = g − α · U Uᵀ g          (α = 1.0 ⇒ full null-space projection)
+   ```
+
+The two functions are implemented in [`physguard/projector.py`](physguard/projector.py)
+(subspace estimation) and [`physguard/optimizer.py`](physguard/optimizer.py)
+(per-step gradient projection wrapper around any `torch.optim.Optimizer`).
+
+## 🗂 Repository layout
 
 ```
-002-code/
-├── README.md                       this file
-├── .gitignore
-├── RealPDEBench/                   benchmark + PhysGuard package
-│   ├── pyproject.toml
-│   ├── environment.yml
-│   ├── LICENSE                     CC BY-NC 4.0 (RealPDEBench)
-│   ├── README.md                   upstream benchmark documentation
-│   └── realpdebench/
-│       ├── nullspace/              <-- PhysGuard core (Fisher-guided projection)
-│       │   ├── null_space_projector.py
-│       │   └── null_space_optimizer.py
-│       ├── train_nullspace.py      <-- PhysGuard fine-tuning entry point
-│       ├── train_surrogate.py      simulated/real training (baseline)
-│       ├── train_gpus.py           multi-GPU training driver
-│       ├── eval.py                 evaluation entry point
-│       ├── configs/                YAML configs (per scenario × architecture × method)
-│       │   ├── cylinder/   *_nullspace.yaml, *_finetune_{real,ewc,l2}.yaml, ...
-│       │   ├── controlled_cylinder/
-│       │   ├── combustion/
-│       │   ├── fsi/  ·  foil/
-│       │   └── ablation/cylinder_deeponet/{E4_alpha,E5_tau}/
-│       ├── model/                  FNO, CNO, DeepONet, Transolver, DPOT, ...
-│       ├── data/                   dataset loaders (HF Arrow + HDF5)
-│       └── utils/                  metrics, normalisers, helpers
-├── analysis/                       Section 4.3 / 4.4 analyses (training curves,
-│   ├── sec43_training_curves.py    Fisher subspace, eigenspectrum, gradient
-│   ├── sec44_eigenspectrum.py      overlap, subspace dimension)
-│   ├── sec44_fisher_subspace.py
-│   ├── sec44_gradient_overlap.py
-│   └── sec44_subspace_dim.py
-└── paper_figures/                  scripts to reproduce manuscript figures
-    ├── generate_figure1.py         Fig. 1  (motivation / overview)
-    ├── generate_motivation_fig*.py Fig. 1 variants
-    ├── rq1_*.py                    Sec. 4.4 RQ1 figures (Fisher–frequency alignment,
-    │                               cross-architecture FIM, intuitive viz, ...)
-    ├── generate_freq_analysis*.py  spectral comparisons
-    ├── generate_qualitative_*.py   qualitative prediction plots
-    ├── generate_appendix_*.py      appendix / universality figures
-    ├── plot_E4_alpha_ablation.py   ablation: protection strength α
-    └── eval_*.sh                   batch-evaluation shell drivers
+.
+├── physguard/                       core algorithm (≈ 800 LOC)
+│   ├── projector.py                 NullSpaceProjector — Gram-trick FIM SVD
+│   ├── optimizer.py                 NullSpaceOptimizer — gradient-projection wrapper
+│   └── train.py                     entry point: `python -m physguard.train`
+├── realpdebench/                    benchmark engine (data loaders, models, eval)
+│   ├── train_surrogate.py           pre-training & baseline fine-tuning entry
+│   ├── eval.py                      evaluation entry
+│   ├── model/                       FNO, CNO, DeepONet, Transolver, ...
+│   ├── data/                        HF Arrow + HDF5 dataset wrappers
+│   └── utils/                       metrics, normalisers, helpers
+├── configs/                         YAML configs (4 archs × 4 paradigms × 3 scenarios)
+│   ├── cylinder/  controlled_cylinder/  combustion/
+│   └── ablation/cylinder_deeponet/{E4_alpha,E5_tau}
+├── figures/                         method overview & motivation
+├── pyproject.toml                   pip-installable package (`pip install -e .`)
+└── environment.yml                  conda environment
 ```
 
-The trained checkpoints, raw experimental result tables, dataset shards, and
-high-resolution figure outputs are **not** included in this repository to keep
-it small. Datasets and pre-trained backbones can be obtained from the public
-sources listed below.
+## ⚙️ Requirements
 
----
-
-## Installation
-
-Python ≥ 3.10 is required.
+Python ≥ 3.10, CUDA ≥ 11.8, one GPU (A40 / A100 / 4090 sufficient for FNO/CNO/DeepONet/Transolver on the cylinder and combustion scenarios).
 
 ```bash
-git clone <this-repo>
-cd 002-code/RealPDEBench
 pip install -e .
 ```
 
-This installs the `realpdebench` package together with the PhysGuard
-extensions. A reference conda environment is provided in
-`RealPDEBench/environment.yml`.
+A reference conda environment is provided in `environment.yml`. The core
+PhysGuard module only depends on `torch` and `tqdm`; the rest of the stack
+(`huggingface-hub`, `datasets`, `einops`, `pytorch-wavelets`, …) is required by
+the benchmark loaders and baseline architectures.
 
----
+## 📥 Data and pre-trained backbones
 
-## Data and pre-trained checkpoints
-
-PhysGuard is benchmarked on
-[RealPDEBench](https://huggingface.co/datasets/AI4Science-WestlakeU/RealPDEBench),
-which provides paired numerical and real-world trajectories for `cylinder`,
-`controlled_cylinder`, `fsi`, `foil`, and `combustion`.
+The experiments use [RealPDEBench](https://huggingface.co/datasets/AI4Science-WestlakeU/RealPDEBench),
+which provides paired numerical and real-world trajectories.
 
 ```bash
 # Metadata only (safe default)
 realpdebench download --dataset-root ./data/realpdebench --scenario cylinder --what metadata
 
-# Full HF Arrow shards (large)
+# Full HF Arrow shards (large, use --endpoint hf-mirror if needed)
 realpdebench download --dataset-root ./data/realpdebench --scenario cylinder \
     --what hf_dataset --dataset-type real     --endpoint https://hf-mirror.com
 realpdebench download --dataset-root ./data/realpdebench --scenario cylinder \
     --what hf_dataset --dataset-type numerical --endpoint https://hf-mirror.com
 ```
 
-Pre-trained backbones for all (architecture × scenario × paradigm)
-combinations are released under
-[`AI4Science-WestlakeU/RealPDEBench-models`](https://huggingface.co/AI4Science-WestlakeU/RealPDEBench-models).
-DPOT additionally requires its own pretrained weights:
+Pre-trained simulation backbones for every (architecture × scenario)
+combination are released at
+[`AI4Science-WestlakeU/RealPDEBench-models`](https://huggingface.co/AI4Science-WestlakeU/RealPDEBench-models):
 
-```bash
-python -m realpdebench.utils.dpot_ckpts_dl
+```python
+from huggingface_hub import hf_hub_download
+ckpt = hf_hub_download(
+    repo_id="AI4Science-WestlakeU/RealPDEBench-models",
+    filename="cylinder/fno/numerical.pth",      # used as the sim-to-real starting point
+)
 ```
 
-After downloading data and checkpoints, edit the relevant YAML config to
-point `dataset_root` and `checkpoint_path` to your local directories.
+After download, edit the `dataset_root` and `checkpoint_path` fields in the
+relevant YAML config (or override on the command line).
 
----
+## 🚀 Quick Start
 
-## Reproducing the main experiments
+The PhysGuard algorithm and three baseline fine-tuning protocols share one
+unified hyperparameter set so the results are directly comparable. We use
+**`cylinder × FNO`** as the running example — replace
+`cylinder/fno` with any combination from `{cylinder, controlled_cylinder, combustion}` × `{fno, cno, deeponet, transolver}`.
 
-All commands assume the working directory is `002-code/RealPDEBench/`.
-
-### 1. Pre-training on simulation data (skip if using released backbones)
+### 1️⃣  Pre-train on simulation data (skip if using released backbones)
 
 ```bash
 python -m realpdebench.train_surrogate \
@@ -132,120 +121,142 @@ python -m realpdebench.train_surrogate \
     --train_data_type numerical
 ```
 
-### 2. PhysGuard sim-to-real fine-tuning
+Results are written to `<results_path>/<model>/<exp_name>_pretrained/<timestamp>/`,
+including `model_<step>.pth` checkpoints and tensorboard logs. The final
+checkpoint is the input to step 2.
 
-The PhysGuard entry point is `train_nullspace.py`. It executes the two-phase
-algorithm of the manuscript: (i) compute the Fisher subspace from the
-simulation set, (ii) fine-tune on real data with gradients projected onto the
-orthogonal complement.
-
-```bash
-python -m realpdebench.train_nullspace \
-    --config configs/cylinder/fno_nullspace.yaml
-```
-
-Key PhysGuard hyperparameters (also exposed as CLI flags):
-
-| Flag                       | Meaning                                                                 | Default |
-|----------------------------|-------------------------------------------------------------------------|---------|
-| `--ns_variance_threshold`  | Adaptive `k` per layer: keep eigenvectors covering this Fisher fraction | `0.9`   |
-| `--ns_n_components`        | Hard cap on `k` when adaptive selection is active                       | `200`   |
-| `--ns_alpha`               | Projection strength α (1.0 = full null-space projection)                | `1.0`   |
-| `--ns_max_samples`         | # simulation samples used to estimate the empirical FIM                 | `200`   |
-| `--ns_protected_layers`    | Comma-separated substrings of parameter names to protect (default: all) | `None`  |
-| `--ns_progressive`         | Linearly relax α towards `--ns_beta_min` over training                  | `False` |
-
-### 3. Baseline fine-tuning protocols
-
-For fair comparisons, the same hyperparameters are reused across protocols:
+### 2️⃣  PhysGuard sim-to-real adaptation (this work)
 
 ```bash
-# Direct fine-tuning on real data
-python -m realpdebench.train_surrogate \
-    --config configs/cylinder/fno_finetune_real.yaml --train_data_type real --is_finetune
-
-# Elastic Weight Consolidation (EWC)
-python -m realpdebench.train_surrogate \
-    --config configs/cylinder/fno_finetune_ewc.yaml  --train_data_type real --is_finetune
-
-# L2-SP regularisation
-python -m realpdebench.train_surrogate \
-    --config configs/cylinder/fno_finetune_l2.yaml   --train_data_type real --is_finetune
+python -m physguard.train \
+    --config configs/cylinder/fno_nullspace.yaml \
+    --checkpoint_path /path/to/pretrained.pth
 ```
 
-The same pattern applies to all four scenarios in the paper
-(`cylinder`, `controlled_cylinder`, `combustion`, plus the appendix scenarios)
-and all four architectures (`fno`, `cno`, `deeponet`, `transolver`).
-Configs follow the naming convention
-`<arch>_{nullspace|finetune_real|finetune_ewc|finetune_l2}.yaml`.
+Argument explanation:
 
-### 4. Evaluation
+| Flag                       | Meaning                                                                            | Default |
+|----------------------------|------------------------------------------------------------------------------------|---------|
+| `--config`                 | YAML with shared training hyperparameters (lr, batch, scenario, model, …)          | —       |
+| `--checkpoint_path`        | Path to the simulation-pretrained checkpoint                                       | —       |
+| `--ns_variance_threshold`  | Adaptive `k` per layer — keep top eigenvectors covering this Fisher fraction (`τ`) | `0.9`   |
+| `--ns_n_components`        | Hard cap on `k` when adaptive selection is on                                      | `200`   |
+| `--ns_alpha`               | Projection strength `α` (`1.0` = full null-space projection, `0.0` = vanilla FT)   | `1.0`   |
+| `--ns_max_samples`         | # simulation samples used to estimate the empirical FIM                            | `200`   |
+| `--ns_protected_layers`    | Comma-separated substrings of parameter names to protect (default = all)           | `None`  |
+| `--ns_progressive`         | Linearly relax `α` towards `--ns_beta_min` over training                           | `False` |
+
+Phase 1 (FIM SVD) prints a per-layer summary like:
+
+```
+[layer fc.weight]  d=4096   N=200  -> k=18  (τ=0.90, ratio=18/200)
+```
+
+Phase 2 then runs standard fine-tuning with the projected gradient. The
+adapted model is saved under `<results_path>/<model>/<exp_name>_nsft/<timestamp>/`.
+
+### 3️⃣  Baseline fine-tuning protocols
+
+For fair comparison, the three baselines share **identical optimiser, batch
+size, learning rate, and number of update steps** with PhysGuard.
+
+```bash
+# (a) Direct fine-tuning on real data
+python -m realpdebench.train_surrogate \
+    --config configs/cylinder/fno_finetune_real.yaml \
+    --train_data_type real --is_finetune \
+    --checkpoint_path /path/to/pretrained.pth
+
+# (b) Elastic Weight Consolidation (EWC, Kirkpatrick et al. 2017)
+python -m realpdebench.train_surrogate \
+    --config configs/cylinder/fno_finetune_ewc.yaml \
+    --train_data_type real --is_finetune \
+    --checkpoint_path /path/to/pretrained.pth
+
+# (c) L2-SP regularisation (Li et al. 2018)
+python -m realpdebench.train_surrogate \
+    --config configs/cylinder/fno_finetune_l2.yaml \
+    --train_data_type real --is_finetune \
+    --checkpoint_path /path/to/pretrained.pth
+```
+
+EWC- and L2-specific knobs (`reg_type`, `reg_lambda`, `ewc_num_samples`) are
+already filled in the `*_finetune_ewc.yaml` / `*_finetune_l2.yaml` configs.
+
+### 4️⃣  Evaluation
 
 ```bash
 python -m realpdebench.eval \
     --config configs/cylinder/fno_nullspace.yaml \
-    --checkpoint_path /path/to/adapted_model.pth
+    --checkpoint_path /path/to/adapted.pth
 ```
 
-Batch evaluation drivers used to populate the result tables in the paper are
-in `paper_figures/eval_*.sh`.
+Outputs the 9 RealPDEBench metrics (RMSE, MAE, Rel L₂, R², Update Ratio, fRMSE, FE, KE, MVPE).
+Per the manuscript, we report **Rel L₂** (overall accuracy) and **Low-f / Mid-f / High-f RMSE** (frequency-band fidelity).
 
-### 5. Ablations (manuscript Section 4 / Appendix)
+### 5️⃣  Ablations
 
-Configs for the protection-strength sweep (E4: α ∈ {0.3, 0.5, 0.7, 1.0}) and
-the variance-threshold sweep (E5: τ ∈ {0.80, 0.85, 0.95, 0.99}) are in
-`configs/ablation/cylinder_deeponet/`. After training, plot with:
+Configs for the protection-strength sweep (`α ∈ {0.3, 0.5, 0.7, 1.0}`) and
+the variance-threshold sweep (`τ ∈ {0.80, 0.85, 0.95, 0.99}`) are in
+`configs/ablation/cylinder_deeponet/`:
 
 ```bash
-python paper_figures/plot_E4_alpha_ablation.py
+python -m physguard.train --config configs/ablation/cylinder_deeponet/E4_alpha/alpha_0.5.yaml
+python -m physguard.train --config configs/ablation/cylinder_deeponet/E5_tau/tau_0.95.yaml
 ```
 
----
+## 📁 Output structure
 
-## Reproducing the figures
+Each run produces:
 
-The `paper_figures/` directory contains the scripts used to generate every
-figure in the manuscript and appendix. Most scripts cache their numerical
-inputs to `.npz`/`.pt` files (not bundled), so you will need either the
-trained checkpoints from step 2/3 above or the cached intermediate arrays
-listed in the manuscript's reproducibility appendix.
-
-Indicative entry points:
-
-| Script                                  | Manuscript reference                       |
-|-----------------------------------------|--------------------------------------------|
-| `generate_figure1.py`, `generate_motivation_fig_v5.py` | Fig. 1 (motivation)        |
-| `generate_freq_analysis_v3.py`          | Fig. 4 (spectral analysis)                 |
-| `generate_qualitative_*.py`             | Fig. 3 (qualitative comparison)            |
-| `rq1_fim_frequency_alignment.py`        | Sec. 4.4 — Fisher / frequency alignment    |
-| `rq1_cross_arch_fim.py`                 | Sec. 4.4 — cross-architecture FIM evidence |
-| `rq1_neurips_proof.py`, `rq1_direct_proof.py`         | Sec. 4.4 — empirical proofs   |
-| `analysis/sec44_eigenspectrum.py`       | Sec. 4.4 — Fisher eigenspectrum            |
-| `analysis/sec44_subspace_dim.py`        | Sec. 4.4 — adaptive subspace dimension     |
-
----
-
-## Citing this work
-
-If you use PhysGuard, please cite the accompanying manuscript (see
-`../001-manuscript/`) and the underlying RealPDEBench benchmark:
-
-```bibtex
-@inproceedings{hu2026realpdebench,
-  title={RealPDEBench: A Benchmark for Complex Physical Systems with Real-World Data},
-  author={Hu, Peiyan and Feng, Haodong and Liu, Hongyuan and others},
-  booktitle={ICLR},
-  year={2026}
-}
+```
+results/<scenario>/<model>/<exp_name>_<paradigm>/<timestamp>/
+├── args.txt                 dump of all CLI / YAML args (for reproducibility)
+├── train.log                training log
+├── tb/                      tensorboard logs
+├── model_<step>.pth         periodic checkpoints
+├── projection.pt            (PhysGuard only) cached FIM SVD output
+└── eval/                    metric tables and qualitative plots
 ```
 
----
+`<paradigm>` is one of `pretrained`, `nsft` (PhysGuard), `finetune_real`,
+`finetune_ewc`, `finetune_l2`.
 
-## License
+## 🧩 Using PhysGuard in your own pipeline
 
-- The PhysGuard additions (the `nullspace/` package, `train_nullspace.py`,
-  the `analysis/` scripts, and the `paper_figures/` scripts) are released
-  under the MIT license — see `LICENSE`.
-- The underlying RealPDEBench code in `RealPDEBench/` is governed by
-  `RealPDEBench/LICENSE` (CC BY-NC 4.0). All redistributions of that code
-  must comply with its terms.
+Two lines integrate PhysGuard into an existing PyTorch training loop:
+
+```python
+from physguard import NullSpaceProjector, NullSpaceOptimizer
+
+projector = NullSpaceProjector(variance_threshold=0.9, alpha=1.0)
+projector.compute_projection(model, sim_dataloader, max_samples=200)
+
+opt = NullSpaceOptimizer(torch.optim.Adam(model.parameters(), lr=1e-4),
+                         model, projector)
+
+for x, y in real_dataloader:
+    loss = model.train_loss(x, y).mean()
+    loss.backward()
+    opt.step()           # projects gradients onto null(U^(m)) before stepping
+    opt.zero_grad()
+```
+
+The projector is architecture-agnostic and supports complex-valued spectral
+weights (e.g. FNO) by splitting real/imaginary parts. See `physguard/projector.py`
+for the Gram-trick implementation and complex-handling logic.
+
+## 🙏 Acknowledgement
+
+The dataset, training pipeline, and baseline architectures are built on top
+of [RealPDEBench](https://github.com/AI4Science-WestlakeU/RealPDEBench)
+(ICLR 2026 Oral). The null-space projection idea is inspired by
+[GPM (ICLR 2021)](https://openreview.net/forum?id=3AOj0RCNC2) and
+[AlphaEdit (ICLR 2025)](https://github.com/jianghoucheng/AlphaEdit), which
+develop similar geometric protection mechanisms in different settings.
+
+## 📜 License
+
+The PhysGuard additions (`physguard/`, `figures/`, top-level configs and
+README) are released under the **MIT** license (`LICENSE`). The benchmark
+code in `realpdebench/` is governed by `LICENSE.RealPDEBench` (CC BY-NC 4.0).

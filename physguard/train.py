@@ -1,20 +1,21 @@
 """
-Null-Space Fine-tuning Training Script for RealPDEBench.
+PhysGuard fine-tuning entry point.
 
-Two-phase training:
-  Phase 1: Load pre-trained model (trained on numerical/simulated data).
-           Compute null-space projection from simulated data.
-  Phase 2: Fine-tune on real data with gradient projection into the null space.
+Two-phase Fisher-guided gradient projection:
+  Phase 1 (offline)   : compute the physics-critical subspace U^(m) from the
+                        empirical Fisher Information Matrix on simulation data.
+  Phase 2 (iterative) : fine-tune on real data; each per-layer gradient g^(m)
+                        is projected as  g_proj = g - alpha * U U^T g  before
+                        the optimiser step.
 
 Usage:
-    python -m realpdebench.train_nullspace --config configs/cylinder/fno_nullspace.yaml
+    python -m physguard.train --config configs/cylinder/fno_nullspace.yaml
 
-    # Or equivalently:
-    python -m realpdebench.train_nullspace \
-        --config configs/cylinder/fno.yaml \
+    # CLI override example
+    python -m physguard.train \
+        --config configs/cylinder/fno_nullspace.yaml \
         --checkpoint_path /path/to/pretrained.pth \
-        --train_data_type real \
-        --ns_n_components 50 \
+        --ns_variance_threshold 0.9 \
         --ns_alpha 1.0
 """
 
@@ -42,8 +43,8 @@ from realpdebench.data.data_normalizer import IdentityNormalizer, GaussianNormal
 from realpdebench.model.load_model import load_model
 from realpdebench.utils.utils import set_seed, add_args_from_config, setup_logging, cycle
 from realpdebench.utils.metrics import eval_metrics, mse_loss
-from realpdebench.nullspace.null_space_projector import NullSpaceProjector
-from realpdebench.nullspace.null_space_optimizer import NullSpaceOptimizer
+from physguard.projector import NullSpaceProjector
+from physguard.optimizer import NullSpaceOptimizer
 
 
 def parse_gpu_ids(gpu_field):
