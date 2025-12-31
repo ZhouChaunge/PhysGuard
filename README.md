@@ -55,8 +55,11 @@ The two functions are implemented in [`physguard/projector.py`](physguard/projec
 │   ├── data/                        HF Arrow + HDF5 dataset wrappers
 │   └── utils/                       metrics, normalisers, helpers
 ├── configs/                         YAML configs (4 archs × 5 paradigms × 3 scenarios)
-│   ├── 1-cylinder/  2-controlled_cylinder/  3-combustion/
-│   └── (each dir: <arch>_{pretrain,dft,ewc,l2sp,physguard}.yaml)
+│   ├── 1-cylinder/
+│   │   ├── pretrain/                {fno,cno,deeponet,transolver}.yaml
+│   │   └── finetune/                {fno,cno,deeponet,transolver}_{dft,ewc,l2sp,physguard}.yaml
+│   ├── 2-controlled_cylinder/  (same layout)
+│   └── 3-combustion/           (same layout)
 ├── figures/                         method overview & motivation
 ├── pyproject.toml                   pip-installable package (`pip install -e .`)
 └── environment.yml                  conda environment
@@ -111,13 +114,13 @@ relevant YAML config (or override on the command line).
 The PhysGuard algorithm and three baseline fine-tuning protocols share one
 unified hyperparameter set so the results are directly comparable. We use
 **`1-cylinder × FNO`** as the running example — replace
-`1-cylinder/fno` with any combination from `{1-cylinder, 2-controlled_cylinder, 3-combustion}` × `{fno, cno, deeponet, transolver}`.
+`1-cylinder` with `{1-cylinder, 2-controlled_cylinder, 3-combustion}` and `fno` with `{fno, cno, deeponet, transolver}`.
 
 ### 1️⃣  Pre-train on simulation data (skip if using released backbones)
 
 ```bash
 python -m realpdebench.train_surrogate \
-    --config configs/1-cylinder/fno_pretrain.yaml \
+    --config configs/1-cylinder/pretrain/fno.yaml \
     --train_data_type numerical
 ```
 
@@ -129,7 +132,7 @@ checkpoint is the input to step 2.
 
 ```bash
 python -m physguard.train \
-    --config configs/1-cylinder/fno_physguard.yaml \
+    --config configs/1-cylinder/finetune/fno_physguard.yaml \
     --checkpoint_path /path/to/pretrained.pth
 ```
 
@@ -163,19 +166,19 @@ size, learning rate, and number of update steps** with PhysGuard.
 ```bash
 # (a) Direct Fine-Tuning (DFT)
 python -m realpdebench.train_surrogate \
-    --config configs/1-cylinder/fno_dft.yaml \
+    --config configs/1-cylinder/finetune/fno_dft.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
 
 # (b) Elastic Weight Consolidation (EWC, Kirkpatrick et al. 2017)
 python -m realpdebench.train_surrogate \
-    --config configs/1-cylinder/fno_ewc.yaml \
+    --config configs/1-cylinder/finetune/fno_ewc.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
 
 # (c) L2-SP regularisation (Li et al. 2018)
 python -m realpdebench.train_surrogate \
-    --config configs/1-cylinder/fno_l2sp.yaml \
+    --config configs/1-cylinder/finetune/fno_l2sp.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
 ```
@@ -187,7 +190,7 @@ already filled in the `*_ewc.yaml` / `*_l2sp.yaml` configs.
 
 ```bash
 python -m realpdebench.eval \
-    --config configs/1-cylinder/fno_physguard.yaml \
+    --config configs/1-cylinder/finetune/fno_physguard.yaml \
     --checkpoint_path /path/to/adapted.pth
 ```
 
@@ -200,11 +203,11 @@ Replace `<paradigm>` with the method name to evaluate:
 
 | Method | Config suffix | Entry point |
 |---|---|---|
-| Pretrained (zero-shot) | `fno_pretrain.yaml` | `realpdebench.eval` |
-| DFT | `fno_dft.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
-| EWC | `fno_ewc.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
-| L2-SP | `fno_l2sp.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
-| **PhysGuard** | `fno_physguard.yaml` | `physguard.train` + `realpdebench.eval` |
+| Pretrained (zero-shot) | `pretrain/fno.yaml` | `realpdebench.eval` |
+| DFT | `finetune/fno_dft.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
+| EWC | `finetune/fno_ewc.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
+| L2-SP | `finetune/fno_l2sp.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
+| **PhysGuard** | `finetune/fno_physguard.yaml` | `physguard.train` + `realpdebench.eval` |
 
 ## 📁 Output structure
 
