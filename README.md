@@ -54,9 +54,9 @@ The two functions are implemented in [`physguard/projector.py`](physguard/projec
 │   ├── model/                       FNO, CNO, DeepONet, Transolver, ...
 │   ├── data/                        HF Arrow + HDF5 dataset wrappers
 │   └── utils/                       metrics, normalisers, helpers
-├── configs/                         YAML configs (4 archs × 4 paradigms × 3 scenarios)
-│   ├── cylinder/  controlled_cylinder/  combustion/
-│   └── ablation/cylinder_deeponet/{E4_alpha,E5_tau}
+├── configs/                         YAML configs (4 archs × 5 paradigms × 3 scenarios)
+│   ├── 1-cylinder/  2-controlled_cylinder/  3-combustion/
+│   └── (each dir: <arch>_{pretrain,dft,ewc,l2sp,physguard}.yaml)
 ├── figures/                         method overview & motivation
 ├── pyproject.toml                   pip-installable package (`pip install -e .`)
 └── environment.yml                  conda environment
@@ -110,14 +110,14 @@ relevant YAML config (or override on the command line).
 
 The PhysGuard algorithm and three baseline fine-tuning protocols share one
 unified hyperparameter set so the results are directly comparable. We use
-**`cylinder × FNO`** as the running example — replace
-`cylinder/fno` with any combination from `{cylinder, controlled_cylinder, combustion}` × `{fno, cno, deeponet, transolver}`.
+**`1-cylinder × FNO`** as the running example — replace
+`1-cylinder/fno` with any combination from `{1-cylinder, 2-controlled_cylinder, 3-combustion}` × `{fno, cno, deeponet, transolver}`.
 
 ### 1️⃣  Pre-train on simulation data (skip if using released backbones)
 
 ```bash
 python -m realpdebench.train_surrogate \
-    --config configs/cylinder/fno.yaml \
+    --config configs/1-cylinder/fno_pretrain.yaml \
     --train_data_type numerical
 ```
 
@@ -129,7 +129,7 @@ checkpoint is the input to step 2.
 
 ```bash
 python -m physguard.train \
-    --config configs/cylinder/fno_nullspace.yaml \
+    --config configs/1-cylinder/fno_physguard.yaml \
     --checkpoint_path /path/to/pretrained.pth
 ```
 
@@ -161,49 +161,50 @@ For fair comparison, the three baselines share **identical optimiser, batch
 size, learning rate, and number of update steps** with PhysGuard.
 
 ```bash
-# (a) Direct fine-tuning on real data
+# (a) Direct Fine-Tuning (DFT)
 python -m realpdebench.train_surrogate \
-    --config configs/cylinder/fno_finetune_real.yaml \
+    --config configs/1-cylinder/fno_dft.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
 
 # (b) Elastic Weight Consolidation (EWC, Kirkpatrick et al. 2017)
 python -m realpdebench.train_surrogate \
-    --config configs/cylinder/fno_finetune_ewc.yaml \
+    --config configs/1-cylinder/fno_ewc.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
 
 # (c) L2-SP regularisation (Li et al. 2018)
 python -m realpdebench.train_surrogate \
-    --config configs/cylinder/fno_finetune_l2.yaml \
+    --config configs/1-cylinder/fno_l2sp.yaml \
     --train_data_type real --is_finetune \
     --checkpoint_path /path/to/pretrained.pth
 ```
 
 EWC- and L2-specific knobs (`reg_type`, `reg_lambda`, `ewc_num_samples`) are
-already filled in the `*_finetune_ewc.yaml` / `*_finetune_l2.yaml` configs.
+already filled in the `*_ewc.yaml` / `*_l2sp.yaml` configs.
 
 ### 4️⃣  Evaluation
 
 ```bash
 python -m realpdebench.eval \
-    --config configs/cylinder/fno_nullspace.yaml \
+    --config configs/1-cylinder/fno_physguard.yaml \
     --checkpoint_path /path/to/adapted.pth
 ```
 
 Outputs the 9 RealPDEBench metrics (RMSE, MAE, Rel L₂, R², Update Ratio, fRMSE, FE, KE, MVPE).
 Per the manuscript, we report **Rel L₂** (overall accuracy) and **Low-f / Mid-f / High-f RMSE** (frequency-band fidelity).
 
-### 5️⃣  Ablations
+### 5️⃣  Evaluate all five methods
 
-Configs for the protection-strength sweep (`α ∈ {0.3, 0.5, 0.7, 1.0}`) and
-the variance-threshold sweep (`τ ∈ {0.80, 0.85, 0.95, 0.99}`) are in
-`configs/ablation/cylinder_deeponet/`:
+Replace `<paradigm>` with the method name to evaluate:
 
-```bash
-python -m physguard.train --config configs/ablation/cylinder_deeponet/E4_alpha/alpha_0.5.yaml
-python -m physguard.train --config configs/ablation/cylinder_deeponet/E5_tau/tau_0.95.yaml
-```
+| Method | Config suffix | Entry point |
+|---|---|---|
+| Pretrained (zero-shot) | `fno_pretrain.yaml` | `realpdebench.eval` |
+| DFT | `fno_dft.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
+| EWC | `fno_ewc.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
+| L2-SP | `fno_l2sp.yaml` | `realpdebench.train_surrogate` + `realpdebench.eval` |
+| **PhysGuard** | `fno_physguard.yaml` | `physguard.train` + `realpdebench.eval` |
 
 ## 📁 Output structure
 
@@ -219,8 +220,7 @@ results/<scenario>/<model>/<exp_name>_<paradigm>/<timestamp>/
 └── eval/                    metric tables and qualitative plots
 ```
 
-`<paradigm>` is one of `pretrained`, `nsft` (PhysGuard), `finetune_real`,
-`finetune_ewc`, `finetune_l2`.
+`<paradigm>` is one of `pretrained` (zero-shot), `dft`, `ewc`, `l2sp`, `physguard`.
 
 ## 🧩 Using PhysGuard in your own pipeline
 
