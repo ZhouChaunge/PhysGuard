@@ -72,7 +72,8 @@ The two functions are implemented in [`physguard/projector.py`](physguard/projec
 ├── figures/                         method overview & motivation figures
 ├── pyproject.toml                   pip-installable package
 ├── environment.yml                  conda environment (non-torch deps)
-└── install.sh                       auto-detects CUDA and installs PyTorch
+├── install.sh                       auto-detects CUDA and installs PyTorch (Linux/macOS)
+└── install.ps1                      same, for Windows (PowerShell)
 ```
 
 ---
@@ -99,13 +100,19 @@ conda activate physguard
 
 ### Step 0.3 — Install PyTorch (auto-detects CUDA version)
 
+**Linux / macOS:**
 ```bash
 bash install.sh
 ```
 
-`install.sh` queries `nvidia-smi` to detect the driver CUDA version and
-installs the matching `torch` wheel (cu118 / cu121 / cu124 / CPU-only).
-It also runs `pip install -e .` to register the `physguard` and `benchmark`
+**Windows (PowerShell):**
+```powershell
+.\install.ps1
+```
+
+Both scripts query `nvidia-smi` to detect the driver CUDA version and
+install the matching `torch` wheel (cu118 / cu121 / cu124 / CPU-only).
+They also run `pip install -e .` to register the `physguard` and `benchmark`
 packages in editable mode.
 
 ### Step 0.4 — Verify the installation
