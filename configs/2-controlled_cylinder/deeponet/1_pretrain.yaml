@@ -1,12 +1,12 @@
 exp_name: deeponet_control
-gpu: [0, 1, 2, 3]
+gpu: 0
 ddp_port: 12358
 seed: 0
 results_path: ./results/002-control_cylinder/
 
 # data
 dataset_name: controlled_cylinder
-dataset_root: ./data/realpdebench/
+dataset_root: ./dataset/
 use_hf_dataset: true
 num_workers: 4
 normalizer: gaussian   # none, gaussian, range
@@ -17,7 +17,6 @@ noise_scale: 0.1 # only applicable for numerical data
 
 # model
 model_name: deeponet
-# checkpoint_path: ./results/deeponet/deeponet_control_numerical_False/2025-09-08_14-27-56/model_0600.pth
 checkpoint_path:
 p: 256
 dropout_rate: 0.1

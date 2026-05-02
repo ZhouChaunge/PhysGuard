@@ -1,11 +1,11 @@
 exp_name: "fno_combustion"
-gpu: [1, 2, 3]
+gpu: 0
 seed: 0
 results_path: "./results/003-combustion/"
 
 # data
 dataset_name: "combustion"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 12
 normalizer: "gaussian" # none, gaussian, range
@@ -16,7 +16,6 @@ noise_scale: 0.0 # only applicable for numerical data
 
 # model
 model_name: "fno" 
-# checkpoint_path: ./results/fno/fno_combustion_numerical_False/2025-09-14_08-01-31/model_0720.pth
 modes1: 4
 modes2: 16
 modes3: 16

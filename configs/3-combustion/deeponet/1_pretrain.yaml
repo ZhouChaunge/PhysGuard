@@ -1,11 +1,11 @@
 exp_name: "deeponet_combustion"
-gpu: [1, 2, 3]
+gpu: 0
 seed: 0
 results_path: "./results/003-combustion/"
 
 # data
 dataset_name: "combustion"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 12
 normalizer: "gaussian" # none, gaussian, range
@@ -16,7 +16,6 @@ noise_scale: 0.0 # only applicable for numerical data
 
 # model
 model_name: "deeponet"
-# checkpoint_path: ./results/deeponet/deeponet_combustion_numerical_False/2025-09-16_22-50-38/model_2220.pth
 p: 128
 dropout_rate: 0.1
 

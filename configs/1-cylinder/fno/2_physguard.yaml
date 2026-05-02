@@ -1,11 +1,11 @@
 exp_name: "fno_cylinder"
-gpu: 2
+gpu: 0
 seed: 0
 results_path: "./results/001-cylinder/"
 
 # data
 dataset_name: "cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 32
 normalizer: "gaussian" # none, gaussian, range
@@ -17,7 +17,7 @@ noise_scale: 0.0
 
 # model
 model_name: "fno"
-checkpoint_path: ./results/001-cylinder/fno/fno_cylinder_pretrained/2026-03-09_17-33-29/model_3760.pth
+checkpoint_path: ./results/001-cylinder/fno/fno_cylinder_pretrained/2026-05-01_23-11-18/model_0159.pth
 modes1: 4
 modes2: 12
 modes3: 16

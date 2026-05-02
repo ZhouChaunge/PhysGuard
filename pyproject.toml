@@ -58,12 +58,12 @@ dependencies = [
 ]
 
 [project.scripts]
-realpdebench = "realpdebench.cli:main"
+benchmark = "benchmark.cli:main"
 
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["physguard", "physguard.*", "realpdebench", "realpdebench.*"]
+include = ["physguard", "physguard.*", "benchmark", "benchmark.*"]
 
 

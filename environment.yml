@@ -1,4 +1,4 @@
-name: realpdebench
+name: physguard
 dependencies:
   - python=3.10
   - pip
@@ -10,12 +10,10 @@ dependencies:
     - matplotlib
     - tqdm
     - torchinfo
-    - torch
     - h5py
     - pyyaml
     - tensorboard
     - einops
-    - torchvision
     - einops_exts
     - rotary_embedding_torch
     - PyWavelets
@@ -26,5 +24,4 @@ dependencies:
     - pandas
     - timm
     - seaborn
-    - yaml
     - datasets

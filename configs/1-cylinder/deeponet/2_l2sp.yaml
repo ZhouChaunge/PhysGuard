@@ -1,11 +1,11 @@
 exp_name: "deeponet_cylinder"
-gpu: 2
+gpu: 0
 seed: 0
 results_path: "./results/001-cylinder/"
 
 # data
 dataset_name: "cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 32
 normalizer: "gaussian"
@@ -17,7 +17,7 @@ noise_scale: 0.0  # extra noise injected to amplify sim-to-real distribution shi
 
 # model
 model_name: "deeponet"
-checkpoint_path: ./results/001-cylinder/deeponet/deeponet_cylinder_pretrained/2026-03-12_11-16-03/model_0100.pth
+checkpoint_path: ./results/.../model_XXXX.pth  # TODO: fill in your Step-1 pretrained checkpoint path
 p: 128
 dropout_rate: 0.1
 

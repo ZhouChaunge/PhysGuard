@@ -1,11 +1,11 @@
 exp_name: "cno_combustion"
-gpu: [1, 2, 3]
+gpu: 0
 seed: 0
 results_path: "./results/003-combustion/"
 
 # data
 dataset_name: "combustion"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 12
 normalizer: "gaussian" # gaussian, range, none
@@ -16,7 +16,6 @@ noise_scale: 0.1 # only applicable for numerical data
 
 # model
 model_name: "cno"
-# checkpoint_path: ./results/cno/cno_combustion_numerical_False/2025-09-16_05-34-53/model_3000.pth
 N_layers: 3 # Number of (D) or (U) blocks in the network
 N_res: 1,                 # Number of (R) blocks per level (except the neck)
 N_res_neck: 8,            # Number of (R) blocks in the neck

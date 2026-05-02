@@ -5,7 +5,7 @@ results_path: "./results/001-cylinder/"
 
 # data
 dataset_name: "cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 32
 normalizer: "gaussian"

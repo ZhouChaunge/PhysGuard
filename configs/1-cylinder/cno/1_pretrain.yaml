@@ -1,13 +1,12 @@
 
-
 exp_name: "cno_cylinder"
-gpu: [0, 1, 2, 3]
+gpu: 0
 seed: 0
 results_path: "./results/001-cylinder/"
 
 # data
 dataset_name: "cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 16
 normalizer: "gaussian" # gaussian, range, none
@@ -24,12 +23,12 @@ N_layers: 3 # Number of (D) or (U) blocks in the network
 N_res: 1,                 # Number of (R) blocks per level (except the neck)
 N_res_neck: 8,            # Number of (R) blocks in the neck
 channel_multiplier: 32,   # How the number of channels evolve?
-conv_kernel: 3,             # Size of all the kernels
+conv_kernel: 3,           # Size of all the kernels
 cutoff_den: 2.0001,       # Filter property 1.
-filter_size: 6,             # Filter property 2.
+filter_size: 6,           # Filter property 2.
 
 lrelu_upsampling: 2,      # Filter property 3.
-half_width_mult: 0.8,    # Filter property 4.
+half_width_mult: 0.8,     # Filter property 4.
 radial: False,            # Filter property 5. Is filter radial?
 batch_norm: True,         # Add BN? We do not add BN in lifting/projection layer
 out_dim: 1,               # Target dimension
@@ -44,9 +43,9 @@ activation: 'LeakyReLU'   # Activation function can be 'LeakyReLU' or 'lrelu'
 is_use_tb: True
 scheduler: cosine # step, cosine
 step_size: 1000 # only applicable for step scheduler
-num_update: 5000
+num_update: 160
 train_batch_size: 4
-test_batch_size: 16
+test_batch_size: 4
 lr: 0.0003
 clip_grad_norm: 0.
 

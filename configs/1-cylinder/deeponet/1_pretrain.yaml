@@ -1,12 +1,12 @@
 exp_name: deeponet_cylinder
-gpu: [0, 1, 2, 3]
+gpu: 2
 ddp_port: 12357
 seed: 0
 results_path: ./results/001-cylinder/
 
 # data
 dataset_name: cylinder
-dataset_root: ./data/realpdebench/
+dataset_root: ./dataset/
 use_hf_dataset: true
 num_workers: 32
 normalizer: gaussian   # none, gaussian, range

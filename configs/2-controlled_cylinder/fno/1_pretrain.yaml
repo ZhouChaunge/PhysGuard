@@ -1,11 +1,11 @@
 exp_name: "fno_control"
-gpu: [0, 1, 2, 3]  # 4-GPU DDP, use CUDA_VISIBLE_DEVICES=0,1,2,3
+gpu: 0
 seed: 0
 results_path: "./results/002-control_cylinder/"
 
 # data
 dataset_name: "controlled_cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 4
 normalizer: "gaussian" # none, gaussian, range
@@ -16,7 +16,6 @@ noise_scale: 0.1 # only applicable for numerical data
 
 # model
 model_name: "fno"
-# checkpoint_path: ./results/fno/fno_control_numerical_False/2025-09-02_18-38-24/model_3760.pth
 checkpoint_path:  # fill in to resume training
 modes1: 4
 modes2: 12

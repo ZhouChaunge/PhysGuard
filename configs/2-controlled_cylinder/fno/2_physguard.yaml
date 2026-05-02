@@ -5,7 +5,7 @@ results_path: "./results/002-control_cylinder/"
 
 # data
 dataset_name: "controlled_cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 16
 normalizer: "gaussian"
@@ -17,7 +17,7 @@ noise_scale: 0.0
 
 # model
 model_name: "fno"
-checkpoint_path: ./results/002-control_cylinder/fno/fno_control_pretrained/2026-03-15_02-36-15/model_3840.pth
+checkpoint_path: ./results/.../model_XXXX.pth  # TODO: fill in your Step-1 pretrained checkpoint path
 modes1: 4
 modes2: 12
 modes3: 16

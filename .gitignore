@@ -18,6 +18,7 @@ dist/
 
 # Experiment artefacts (excluded from the repo by design)
 results/
+dataset/
 logs/
 ablation_logs/
 checkpoints/

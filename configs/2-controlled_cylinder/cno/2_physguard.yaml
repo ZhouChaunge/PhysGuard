@@ -1,11 +1,11 @@
 exp_name: "cno_control"
-gpu: 1
+gpu: 0
 seed: 0
 results_path: "./results/002-control_cylinder/"
 
 # data
 dataset_name: "controlled_cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 16
 normalizer: "gaussian"
@@ -17,7 +17,7 @@ noise_scale: 0.0
 
 # model
 model_name: "cno"
-checkpoint_path: ./results/002-control_cylinder/cno/cno_control_pretrained/2026-03-16_00-37-17/model_2600.pth
+checkpoint_path: ./results/.../model_XXXX.pth  # TODO: fill in your Step-1 pretrained checkpoint path
 
 N_layers: 3
 N_res: 1,

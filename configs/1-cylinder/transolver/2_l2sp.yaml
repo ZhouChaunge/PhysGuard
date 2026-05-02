@@ -1,11 +1,11 @@
 exp_name: "transolver_cylinder"
-gpu: 2
+gpu: 0
 seed: 0
 results_path: "./results/001-cylinder/"
 
 # data
 dataset_name: "cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 4
 normalizer: "gaussian"
@@ -17,7 +17,7 @@ noise_scale: 0.1  # extra noise injected to amplify sim-to-real distribution shi
 
 # model
 model_name: "transolver"
-checkpoint_path: ./results/001-cylinder/transolver/transolver_cylinder_pretrained/2026-03-25_21-23-52/model_5000.pth
+checkpoint_path: ./results/.../model_XXXX.pth  # TODO: fill in your Step-1 pretrained checkpoint path
 space_dim: 3
 n_layers: 1
 n_hidden: 256
@@ -43,7 +43,7 @@ test_batch_size: 8
 lr: 0.0001
 clip_grad_norm: 0.
 
-# L2 regularization (防遗忘 baseline)
+# L2 regularization (anti-forgetting baseline)
 reg_type: "l2"
 reg_lambda: 1.0e-4
 

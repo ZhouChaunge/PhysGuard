@@ -1,13 +1,13 @@
 
 
 exp_name: "cno_control"
-gpu: [0, 1, 2, 3]  # 4-GPU DDP
+gpu: 0
 seed: 0
 results_path: "./results/002-control_cylinder/"
 
 # data
 dataset_name: "controlled_cylinder"
-dataset_root: "./data/realpdebench/"
+dataset_root: "./dataset/"
 use_hf_dataset: true
 num_workers: 12
 normalizer: "gaussian" # gaussian, range, none
@@ -18,7 +18,6 @@ noise_scale: 0.1 # only applicable for numerical data
 
 # model
 model_name: "cno"
-# checkpoint_path: ./results/cno/cno_control_numerical_False/2025-09-07_00-40-24/model_4400.pth
 checkpoint_path:  # fill in to resume training
 
 N_layers: 3 # Number of (D) or (U) blocks in the network                 
