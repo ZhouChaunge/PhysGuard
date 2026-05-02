@@ -16,7 +16,7 @@ Usage:
     
     dataset = CombustionHFDataset(
         dataset_name="combustion",
-        dataset_root="/wutailin/real_benchmark/",
+        dataset_root="./dataset/",
         dataset_type="real",
         mode="train",
         N_autoregressive=10,  # Now works correctly!
