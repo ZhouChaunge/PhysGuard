@@ -10,13 +10,47 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "==> Detecting CUDA driver version..."
 
+# --- A: search nvidia-smi in PATH and common Windows install locations ---
 $CUDA_VER = $null
-try {
-    $nvidiaSmi = nvidia-smi 2>$null | Select-String "CUDA Version: (\d+\.\d+)"
-    if ($nvidiaSmi) {
-        $CUDA_VER = $nvidiaSmi.Matches[0].Groups[1].Value
+$nvidiaSmiExe = $null
+
+$candidates = @(
+    "nvidia-smi",   # already in PATH
+    "$env:SystemRoot\System32\nvidia-smi.exe",
+    "C:\Windows\System32\nvidia-smi.exe",
+    "C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi.exe",
+    "C:\Program Files\NVIDIA Corporation\NvSMI\nvidia-smi.exe"
+)
+
+foreach ($candidate in $candidates) {
+    try {
+        $out = & $candidate 2>$null
+        if ($LASTEXITCODE -eq 0 -and $out) {
+            $nvidiaSmiExe = $candidate
+            break
+        }
+    } catch {}
+}
+
+if ($nvidiaSmiExe) {
+    $out = & $nvidiaSmiExe 2>$null | Select-String "CUDA Version: (\d+\.\d+)"
+    if ($out) {
+        $CUDA_VER = $out.Matches[0].Groups[1].Value
     }
-} catch {}
+}
+
+# --- B: if still not found, ask the user ---
+if (-not $CUDA_VER) {
+    Write-Host ""
+    Write-Host "    Could not detect CUDA version automatically (nvidia-smi not found)."
+    Write-Host "    Please run 'nvidia-smi' manually in another window to find your CUDA version,"
+    Write-Host "    then enter it here (e.g. 12.4), or press Enter to install CPU-only torch."
+    $input = Read-Host "    Your CUDA version"
+    $input = $input.Trim()
+    if ($input -match "^\d+\.\d+$") {
+        $CUDA_VER = $input
+    }
+}
 
 if (-not $CUDA_VER) {
     Write-Host "    No GPU detected. Installing CPU-only torch."
