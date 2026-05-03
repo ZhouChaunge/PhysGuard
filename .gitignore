@@ -43,6 +43,8 @@ data/realpdebench/
 *.png
 *.jpg
 *.jpeg
+!figures/*.png
+!figures/*.jpg
 !RealPDEBench/imgs/*.png
 !RealPDEBench/imgs/*.jpg
 
