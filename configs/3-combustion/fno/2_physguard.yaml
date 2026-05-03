@@ -17,7 +17,7 @@ noise_scale: 0.0
 
 # model
 model_name: "fno"
-checkpoint_path: ./results/.../model_XXXX.pth  # TODO: fill in your Step-1 pretrained checkpoint path
+checkpoint_path: ./results/003-combustion/fno/fno_combustion_pretrained/2026-05-02_23-39-24/model_2000.pth
 modes1: 4
 modes2: 16
 modes3: 16

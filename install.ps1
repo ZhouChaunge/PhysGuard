@@ -83,7 +83,7 @@ if (-not $CUDA_VER) {
 
 Write-Host "==> Installing: $TORCH_VER"
 Write-Host "    from: $TORCH_INDEX"
-pip install $TORCH_VER.Split(" ") --index-url $TORCH_INDEX
+pip install $TORCH_VER.Split(" ") --index-url $TORCH_INDEX --force-reinstall
 
 Write-Host "==> Installing project (editable)..."
 pip install -e .
