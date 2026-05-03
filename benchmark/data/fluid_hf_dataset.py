@@ -128,13 +128,7 @@ class FluidHFDataset(RealDataset):
         self.optical_sigma = optical_sigma
         
         # Paths
-        _DATASET_DIR_MAP = {
-            "cylinder": "1_cylinder",
-            "controlled_cylinder": "2_controlled_cylinder",
-            "combustion": "3_combustion",
-        }
-        _dir_name = _DATASET_DIR_MAP.get(dataset_name, dataset_name)
-        self.dataset_dir = os.path.join(dataset_root, _dir_name)
+        self.dataset_dir = os.path.join(dataset_root, dataset_name)
         self.dataset_path = os.path.join(self.dataset_dir, dataset_type)
         self.hf_dataset_dir = os.path.join(self.dataset_dir, "hf_dataset")
         
