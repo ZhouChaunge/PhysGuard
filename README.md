@@ -106,7 +106,7 @@ Click your operating system to expand the complete step-by-step guide:
 **Prerequisites:**
 1. Install **[Miniconda](https://docs.conda.io/en/latest/miniconda.html)** (64-bit, Python 3.11+)
 2. Install **[Git for Windows](https://git-scm.com/download/win)**
-3. Verify your NVIDIA driver: run `nvidia-smi` in any PowerShell window
+3. Verify your NVIDIA driver: run `watch -n 0.1 nvidia-smi` in any PowerShell window
 
 ---
 
@@ -200,7 +200,7 @@ source "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda init bash && exec bash
 
 # Verify NVIDIA driver
-nvidia-smi
+watch -n 0.1 nvidia-smi
 ```
 
 ---
