@@ -26,7 +26,7 @@ width: 64
 is_use_tb: 
 scheduler: cosine # step, cosine
 step_size: 1000 # only applicable for step scheduler
-num_update: 160
+num_update: 4000
 train_batch_size: 16
 test_batch_size: 32
 lr: 0.0001
